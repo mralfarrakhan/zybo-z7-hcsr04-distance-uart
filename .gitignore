@@ -1,4 +1,5 @@
 # Vivado project / build artifacts (regenerate from sources + constraints)
+build/
 *.jou
 *.log
 *.str

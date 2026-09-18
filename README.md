@@ -55,6 +55,30 @@ board silkscreen, to make sure they match the physical Pmod pin numbering.
 4. Set `top` as the top module, run Synthesis -> Implementation -> Generate
    Bitstream, then program the device through Hardware Manager.
 
+## Building with F4PGA (Docker or Podman)
+
+With Docker installed, generate an open-source-toolchain bitstream with:
+
+```bash
+make bitstream
+```
+
+This runs the maintained F4PGA Zybo flow inside the F4PGA Zynq-7010 container:
+`symbiflow_synth`, pack, place, route, FASM generation, then bitstream
+generation. The modular `f4pga build -f flow.json` runner in this image does
+not include a Zynq-7010 platform definition, so it rejects
+`xc7z010clg400-1`. The resulting bitstream is `build/zybo-z7-10/top.bit`.
+The first build pulls the container image and can take several minutes. To use
+Podman instead:
+
+```bash
+make bitstream CONTAINER_ENGINE=podman
+```
+
+The image defaults to the same `ghcr.io/hdl/conda/f4pga/xc7/z010:latest` image
+used by the sibling HDL playground. Set `F4PGA_IMAGE` to a version- or
+digest-pinned image when you need a fully immutable build environment.
+
 ## Watching the output
 
 With the bitstream running and the USB-UART dongle plugged in:

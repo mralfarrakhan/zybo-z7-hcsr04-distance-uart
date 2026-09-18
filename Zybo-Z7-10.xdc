@@ -3,15 +3,9 @@
 ## 125 MHz system clock
 ## =========================================================
 
-set_property -dict {
-    PACKAGE_PIN K17
-    IOSTANDARD LVCMOS33
-} [get_ports clk]
+set_property -dict { PACKAGE_PIN K17 IOSTANDARD LVCMOS33 } [get_ports clk]
 
-create_clock -period 8.000 \
-    -name sys_clk_pin \
-    [get_ports clk]
-
+create_clock -period 8.000 -name sys_clk_pin [get_ports clk]
 
 ## =========================================================
 ## HC-SR04
@@ -27,7 +21,6 @@ set_property -dict {PACKAGE_PIN U14 IOSTANDARD LVCMOS33} [get_ports hc_trig]
 ## HC-SR04 ECHO -> JD pin 1
 set_property -dict {PACKAGE_PIN T14 IOSTANDARD LVCMOS33} [get_ports hc_echo]
 
-
 ## =========================================================
 ## UART TX
 ## Pmod JE (physical pin numbering, standard 12-pin Pmod)
@@ -37,7 +30,4 @@ set_property -dict {PACKAGE_PIN T14 IOSTANDARD LVCMOS33} [get_ports hc_echo]
 ## FPGA TX -> CP210x RXD
 ## =========================================================
 
-set_property -dict {
-    PACKAGE_PIN V13
-    IOSTANDARD LVCMOS33
-} [get_ports uart_tx]
+set_property -dict { PACKAGE_PIN V13 IOSTANDARD LVCMOS33 } [get_ports uart_tx]
