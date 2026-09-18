@@ -1,0 +1,23 @@
+# Vivado project / build artifacts (regenerate from sources + constraints)
+*.jou
+*.log
+*.str
+*.xpr
+.Xil/
+*.cache/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+*.srcs/
+.Xil.lock
+vivado_pid*.str
+webtalk*.log
+webtalk*.jou
+
+# OS cruft
+Thumbs.db
+.DS_Store
+
+# Raw demo/documentation videos - too large for this repo, kept locally only
+*.mp4
