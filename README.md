@@ -78,7 +78,7 @@ HC-SR04 on a breadboard, wired into Pmod JD (trig/echo + voltage divider) and
 Pmod JE (UART), driven by a Zybo Z7-10.
 
 ## Powershell Output
-![](media/powershell output.png)
+![](media/powershell%20output.png)
 
 ## Files
 
