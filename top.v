@@ -51,6 +51,25 @@ module top (
     end
     wire one_sec_pulse = (second_timer == ONE_SEC - 1);
 
+    // Binary to BCD conversion for 3-digit decimal display (0..999)
+    wire [9:0] dist_clamped = (distance_reg > 16'd999) ? 10'd999 : distance_reg[9:0];
+    reg [3:0] bcd_hundreds, bcd_tens, bcd_units;
+
+    integer i;
+    reg [11:0] bcd_temp;
+    always @(*) begin
+        bcd_temp = 12'd0;
+        for (i = 9; i >= 0; i = i - 1) begin
+            if (bcd_temp[3:0] >= 5)  bcd_temp[3:0]  = bcd_temp[3:0] + 4'd3;
+            if (bcd_temp[7:4] >= 5)  bcd_temp[7:4]  = bcd_temp[7:4] + 4'd3;
+            if (bcd_temp[11:8] >= 5) bcd_temp[11:8] = bcd_temp[11:8] + 4'd3;
+            bcd_temp = {bcd_temp[10:0], dist_clamped[i]};
+        end
+        bcd_hundreds = bcd_temp[11:8];
+        bcd_tens     = bcd_temp[7:4];
+        bcd_units    = bcd_temp[3:0];
+    end
+
     // "D=xxxcm\r\n" send FSM, one character per UART frame
     reg [7:0] data_to_send;
     reg       send;
@@ -80,9 +99,9 @@ module top (
         send <= 1'b0; // pulse for exactly 1 clock per character
         if (!sending) begin
             if (one_sec_pulse) begin
-                hundreds   <= (distance_reg / 100) % 10;
-                tens       <= (distance_reg / 10) % 10;
-                units      <= distance_reg % 10;
+                hundreds   <= bcd_hundreds;
+                tens       <= bcd_tens;
+                units      <= bcd_units;
                 char_index <= 4'd0;
                 sending    <= 1'b1;
             end

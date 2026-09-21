@@ -15,17 +15,16 @@ module hc_sr04_controller #(
     localparam integer TRIG_US       = 10;                      // 10us trigger pulse
 
     // State Machine
-    localparam [2:0]
-        S_IDLE       = 3'd0,
-        S_TRIGGER    = 3'd1,
-        S_WAIT_ECHO  = 3'd2,
-        S_MEASURE    = 3'd3,
-        S_CALCULATE  = 3'd4;
+    localparam [1:0]
+        S_IDLE       = 2'd0,
+        S_TRIGGER    = 2'd1,
+        S_WAIT_ECHO  = 2'd2,
+        S_MEASURE    = 2'd3;
 
-    reg [2:0]  state;
+    reg [1:0]  state;
     reg [6:0]  us_counter;
     reg [15:0] timer_us;
-    reg [15:0] echo_us;
+    reg [5:0]  tick_58;
 
     wire us_tick = (us_counter == CLOCKS_PER_US - 1);
 
@@ -52,7 +51,7 @@ module hc_sr04_controller #(
             trig        <= 1'b0;
             data_valid  <= 1'b0;
             timer_us    <= 16'd0;
-            echo_us     <= 16'd0;
+            tick_58     <= 6'd0;
             distance_cm <= 16'd0;
         end
         else begin
@@ -82,8 +81,10 @@ module hc_sr04_controller #(
                 // Wait for ECHO to go high; bail out on timeout so we never deadlock
                 S_WAIT_ECHO: begin
                     if (echo_rising) begin
-                        echo_us <= 16'd0;
-                        state   <= S_MEASURE;
+                        tick_58     <= 6'd0;
+                        distance_cm <= 16'd0;
+                        timer_us    <= 16'd0;
+                        state       <= S_MEASURE;
                     end
                     else if (us_tick) begin
                         if (timer_us < MAX_ECHO_US - 1)
@@ -96,19 +97,30 @@ module hc_sr04_controller #(
                     end
                 end
 
-                // Count how long ECHO stays high
+                // Count how long ECHO stays high; 58 us corresponds to 1 cm
                 S_MEASURE: begin
-                    if (echo_falling)
-                        state <= S_CALCULATE;
-                    else if (us_tick)
-                        echo_us <= echo_us + 16'd1;
-                end
-
-                // distance(cm) = echo_high_time(us) / 58
-                S_CALCULATE: begin
-                    distance_cm <= echo_us / 58;
-                    data_valid  <= 1'b1;
-                    state       <= S_IDLE;
+                    if (echo_falling) begin
+                        data_valid <= 1'b1;
+                        state      <= S_IDLE;
+                    end
+                    else if (us_tick) begin
+                        if (timer_us < MAX_ECHO_US - 1) begin
+                            timer_us <= timer_us + 16'd1;
+                            if (tick_58 == 6'd57) begin
+                                tick_58     <= 6'd0;
+                                distance_cm <= distance_cm + 16'd1;
+                            end
+                            else begin
+                                tick_58 <= tick_58 + 6'd1;
+                            end
+                        end
+                        else begin
+                            // Timeout
+                            distance_cm <= 16'd0;
+                            data_valid  <= 1'b1;
+                            state       <= S_IDLE;
+                        end
+                    end
                 end
 
                 default: state <= S_IDLE;
